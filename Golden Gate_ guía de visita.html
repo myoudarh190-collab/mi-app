@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Golden Gate: guía de visita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F2; --surface:#FFFFFF; --ink:#16232B; --muted:#5A6B75; --line:#D3DADE;
+  --orange:#C0362C; --on-orange:#FFFFFF; --fog:#DCE4E8; --ok:#2F6F55;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A20; --surface:#17262E; --ink:#EAF0F2; --muted:#9DB0BA; --line:#2A3C46;
+    --orange:#E2574B; --on-orange:#16232B; --fog:#1E3039; --ok:#6CC4A0; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A20; --surface:#17262E; --ink:#EAF0F2; --muted:#9DB0BA; --line:#2A3C46;
+  --orange:#E2574B; --on-orange:#16232B; --fog:#1E3039; --ok:#6CC4A0; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Barlow,system-ui,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 40px}
+header{padding:28px 0 8px}
+h1{font:700 clamp(2.4rem,9vw,3.6rem)/.95 "Barlow Condensed","Arial Narrow",sans-serif;margin:0;color:var(--orange);letter-spacing:.2px}
+.sub{color:var(--muted);margin:8px 0 0;max-width:46ch}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}
+.fact{background:var(--fog);border-radius:6px;padding:10px 12px}
+.fact b{display:block;font:700 1.5rem/1 "Barlow Condensed","Arial Narrow",sans-serif}
+.fact span{font-size:.8rem;color:var(--muted)}
+nav{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:16px}
+nav button{flex:1;background:none;border:0;padding:12px 4px;font:600 1rem Barlow,sans-serif;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+nav button[aria-selected="true"]{color:var(--orange);border-bottom-color:var(--orange)}
+button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:4px 0 14px}
+.bar i{display:block;height:100%;width:0;background:var(--orange);transition:width .25s}
+.prog{font-size:.9rem;color:var(--muted)}
+.spot{display:flex;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;margin-bottom:10px;align-items:flex-start}
+.spot input{width:22px;height:22px;margin-top:2px;accent-color:var(--orange);flex:none}
+.spot h3{margin:0;font:700 1.25rem/1.1 "Barlow Condensed","Arial Narrow",sans-serif}
+.spot p{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.spot.done h3{color:var(--ok)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px}
+.q{font:700 1.5rem/1.15 "Barlow Condensed","Arial Narrow",sans-serif;margin:0 0 14px}
+.opt{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);color:var(--ink);padding:12px 14px;border-radius:6px;margin-bottom:8px;font:500 1rem Barlow,sans-serif;cursor:pointer}
+.opt.right{border-color:var(--ok);background:var(--ok);color:var(--on-orange)}
+.opt.wrong{border-color:var(--orange);background:var(--orange);color:var(--on-orange)}
+.why{margin:10px 0;color:var(--muted)}
+.go{background:var(--orange);color:var(--on-orange);border:0;border-radius:6px;padding:12px 20px;font:600 1rem Barlow,sans-serif;cursor:pointer}
+.reset{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;padding:8px 0}
+[hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Golden Gate</h1>
+    <p class="sub">Tu guía para ver el puente desde sus mejores ángulos y comprobar cuánto sabes de él.</p>
+  </header>
+  <div class="facts">
+    <div class="fact"><b>1937</b><span>año de apertura</span></div>
+    <div class="fact"><b>1 280 m</b><span>vano central</span></div>
+    <div class="fact"><b>227 m</b><span>altura de las torres</span></div>
+  </div>
+  <nav role="tablist">
+    <button role="tab" id="t-spots" aria-selected="true">Miradores</button>
+    <button role="tab" id="t-quiz" aria-selected="false">Trivia</button>
+  </nav>
+
+  <section id="spots">
+    <div class="prog" id="prog"></div>
+    <div class="bar"><i id="barfill"></i></div>
+    <div id="list"></div>
+    <button class="reset" id="reset">Borrar mi progreso</button>
+  </section>
+
+  <section id="quiz" hidden></section>
+</div>
+<script>
+const SPOTS=[
+ {id:"spencer",n:"Battery Spencer",d:"Desde Marin Headlands, la postal clásica con San Francisco al fondo. Ve al amanecer para evitar el gentío."},
+ {id:"fortpoint",n:"Fort Point",d:"Un fuerte del siglo XIX justo bajo el arco sur: verás el puente desde abajo, con el Pacífico rompiendo cerca."},
+ {id:"crissy",n:"Crissy Field",d:"Paseo llano junto a la bahía, ideal para caminar con el puente de frente."},
+ {id:"baker",n:"Baker Beach",d:"Playa amplia al oeste del puente. Buena luz de tarde, pero el agua es peligrosa para bañarse."},
+ {id:"welcome",n:"Centro de visitantes",d:"Junto al extremo sur: exposición sobre su construcción y punto de partida para cruzar a pie o en bici."},
+ {id:"cruzar",n:"Cruzar a pie o en bici",d:"Recorre el puente por la acera. Hace viento y frío incluso en verano: lleva capa extra."}
+];
+const QUIZ=[
+ {q:"¿En qué año se abrió al público el puente?",o:["1927","1937","1947"],a:1,w:"Se inauguró el 27 de mayo de 1937."},
+ {q:"¿Cómo se llama el color oficial del puente?",o:["Rojo Pacífico","Naranja internacional","Óxido de California"],a:1,w:"El naranja internacional destaca entre la niebla y combina con el entorno."},
+ {q:"¿Qué estrecho cruza?",o:["Bahía de Monterey","Estrecho de Carquinez","El estrecho del Golden Gate"],a:2,w:"Une la bahía de San Francisco con el océano Pacífico."},
+ {q:"¿Qué tipo de puente es?",o:["Colgante","De arco","Atirantado"],a:0,w:"Es un puente colgante: la calzada cuelga de dos grandes cables principales."}
+];
+const K="gg-visited";
+let seen={};
+try{seen=JSON.parse(localStorage.getItem(K)||"{}")}catch(e){seen={}}
+function save(){try{localStorage.setItem(K,JSON.stringify(seen))}catch(e){}}
+const $=id=>document.getElementById(id);
+
+function renderSpots(){
+  $("list").innerHTML="";
+  SPOTS.forEach(s=>{
+    const el=document.createElement("label");
+    el.className="spot"+(seen[s.id]?" done":"");
+    el.innerHTML='<input type="checkbox" '+(seen[s.id]?"checked":"")+'><div><h3>'+s.n+'</h3><p>'+s.d+'</p></div>';
+    el.querySelector("input").addEventListener("change",e=>{
+      seen[s.id]=e.target.checked; save(); renderSpots();
+    });
+    $("list").appendChild(el);
+  });
+  const c=SPOTS.filter(s=>seen[s.id]).length;
+  $("prog").textContent=c+" de "+SPOTS.length+" visitados";
+  $("barfill").style.width=(c/SPOTS.length*100)+"%";
+}
+$("reset").onclick=()=>{seen={};save();renderSpots()};
+
+let qi=0,score=0,answered=false;
+function renderQuiz(){
+  const box=$("quiz");
+  if(qi>=QUIZ.length){
+    box.innerHTML='<div class="card"><p class="q">Resultado: '+score+' de '+QUIZ.length+'</p><p class="why">'+(score===QUIZ.length?"Perfecto. Ya eres guía oficial.":"Buen intento. Repite para mejorar tu marca.")+'</p><button class="go" id="again">Jugar otra vez</button></div>';
+    $("again").onclick=()=>{qi=0;score=0;renderQuiz()};
+    return;
+  }
+  const it=QUIZ[qi]; answered=false;
+  box.innerHTML='<div class="card"><div class="prog">Pregunta '+(qi+1)+' de '+QUIZ.length+'</div><p class="q">'+it.q+'</p><div id="opts"></div><p class="why" id="why" hidden></p><button class="go" id="next" hidden>'+(qi===QUIZ.length-1?"Ver resultado":"Siguiente pregunta")+'</button></div>';
+  it.o.forEach((t,i)=>{
+    const b=document.createElement("button");
+    b.className="opt"; b.textContent=t;
+    b.onclick=()=>{
+      if(answered) return; answered=true;
+      const all=$("opts").children;
+      all[it.a].classList.add("right");
+      if(i!==it.a) b.classList.add("wrong"); else score++;
+      $("why").textContent=it.w; $("why").hidden=false; $("next").hidden=false;
+    };
+    $("opts").appendChild(b);
+  });
+  $("next").onclick=()=>{qi++;renderQuiz()};
+}
+
+function tab(which){
+  const s=which==="spots";
+  $("spots").hidden=!s; $("quiz").hidden=s;
+  $("t-spots").setAttribute("aria-selected",s); $("t-quiz").setAttribute("aria-selected",!s);
+}
+$("t-spots").onclick=()=>tab("spots");
+$("t-quiz").onclick=()=>tab("quiz");
+renderSpots(); renderQuiz();
+</script>
+</body>
+</html>
